@@ -3,7 +3,7 @@ Auto Hotkeys for Elite: Dangerous
 
 By Kami-Kaze
 
-Note: This only works for Windows as of now.
+**Note:** This only works for Windows as of now.
 
 # Installing
 - Requires [Python](https://www.python.org/downloads/) 3.10 or later
