@@ -7,7 +7,9 @@ By Kami-Kaze
 
 # Installing
 - Requires [Python](https://www.python.org/downloads/) 3.10 or later
-- Run `pip-install -r deps` from a terminal (twice if the first one fails)
+- Download the `Source code.zip` from the latest [release](https://github.com/Kaze-Kami/auto-ed/releases/latest)
+- Unpack it and put it where ever you feel like it (though remember where!)
+- Open the folder in a terminal and run `pip-install -r deps.txt` from a terminal (twice if the first one fails)
 
 # Setup
 Either run `python setup.py` from a terminal and follow the instructions to set the key binds
