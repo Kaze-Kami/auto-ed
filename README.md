@@ -24,6 +24,7 @@ Or set the following key binds yourself (I recommend using the secondary bind)
 - Navigate to where the `main.pyw` is located
 - Run `pythonw main.pyw` from a terminal
 - Give it a second, and you should see the following window:
+
 ![img.png](docs/screenshot_main.png)
 
 The top row of (green) buttons are toggles, to enable different features and the app itself,
