@@ -1,0 +1,4 @@
+pywin32==305
+watchdog==2.2.1
+easygui==0.98.3
+python-essentials @ git+https://github.com/Kaze-Kami/python-essentials.git
