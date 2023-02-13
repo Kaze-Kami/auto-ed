@@ -13,6 +13,7 @@ import json
 
 import imgui
 from essentials.gui.app import App, AppConfig
+from essentials.gui.config import Config
 from essentials.io.logging import get_logger
 
 from lib.ed import Status
@@ -24,14 +25,10 @@ _LOGGER = get_logger('main')
 _CONFIG_PATH = 'config.json'
 
 
-class MyConfig(AppConfig):
-    def __init__(self,
-                 width: int, height: int,
-                 title: str, icon_path: str,
-                 start_minimized: bool, active: bool,
-                 auto_fa: bool, auto_da: bool, auto_gear: bool
-                 ):
-        super().__init__(width, height, title, icon_path, start_minimized)
+class MyConfig(Config):
+    def __init__(self, start_minimized: bool, active: bool, auto_fa: bool, auto_da: bool, auto_gear: bool):
+        super().__init__()
+        self.start_minimized = start_minimized
         self.active = active
         self.auto_fa = auto_fa
         self.auto_da = auto_da
@@ -40,10 +37,6 @@ class MyConfig(AppConfig):
 
 def default_config():
     return MyConfig(
-            width=330,
-            height=210,
-            title='Auto-ED',
-            icon_path='resources/icon-color.png',
             start_minimized=False,
             auto_fa=True,
             auto_da=True,
@@ -54,9 +47,16 @@ def default_config():
 
 class MyApp(App):
     def __init__(self):
-        super().__init__(config := MyConfig.load(_CONFIG_PATH, default_config))
+        self.config = Config.load(MyConfig, _CONFIG_PATH, default_config)
+        super().__init__(AppConfig(
+                width=330,
+                height=210,
+                title='Auto-ED',
+                icon_path='resources/icon-color.png',
+                start_minimized=self.config.start_minimized,
+                background_color=(0.17, 0.24, 0.31),
+        ))
 
-        self.config = config
         self.watchdog = Watchdog(ed.BasePath, ed.Files.STATUS, self.on_status_update)
 
         self.flight_assist = False
@@ -125,8 +125,8 @@ class MyApp(App):
             win.press_key(KEY_GEAR)
 
     def render(self):
-        red = (.95, .05, .05)
-        green = (.05, .95, .05)
+        red = (0.90, 0.49, 0.13)
+        green = (0.18, 0.80, 0.44)
 
         def yes_no(prop: bool, name: str, yes: str = 'Yes', no: str = 'No'):
             color = green if prop else red
@@ -172,7 +172,7 @@ class MyApp(App):
 
     def on_stop(self):
         self.watchdog.stop()
-        MyConfig.save(_CONFIG_PATH, self.config)
+        Config.save(MyConfig, _CONFIG_PATH, self.config)
 
 
 def main():
