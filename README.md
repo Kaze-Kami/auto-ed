@@ -6,7 +6,7 @@ By Kami-Kaze
 **Note:** This only works for Windows as of now.
 
 # Installing
-- Requires [Python](https://www.python.org/downloads/) 3.10 or later
+- Requires [Python](https://www.python.org/downloads/) 3.10 or later  (might work on 3.9 - no guarantees)
 - Download the `Source code.zip` from the latest [release](https://github.com/Kaze-Kami/auto-ed/releases/latest)
 - Unpack it and put it where ever you feel like it (though remember where!)
 - Open the folder in a terminal and run `pip-install -r deps.txt` from a terminal (twice if the first one fails)
@@ -14,7 +14,7 @@ By Kami-Kaze
 # Setup
 Either run `python setup.py` from a terminal and follow the instructions to set the key binds
 
-Or set the following key binds yourself (I recommend using the secondary bind)
+Or set the following key binds yourself (I recommend using the secondary bind, at least for gear so you can still use it)
 > - Flight Assist: F9
 > - Drive Assist: F10
 > - Landing Gear: F11
