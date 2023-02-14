@@ -10,6 +10,7 @@ Reads the status.json and if disables FA if necessary
 """
 
 import json
+import time
 
 import imgui
 from essentials.gui.app import App, AppConfig
@@ -62,7 +63,7 @@ class MyApp(App):
         self.config: MyConfig = Config.load(MyConfig, _CONFIG_PATH, default_config)
         super().__init__(AppConfig(
                 width=330,
-                height=210,
+                height=250,
                 title='Auto-ED',
                 icon_path='resources/icon-color.png',
                 start_minimized=self.config.start_minimized,
@@ -73,13 +74,23 @@ class MyApp(App):
 
         self.state = ShipState()
         self.was_docked_or_landed = False
+        self.last_focused_at = time.time()
 
     def update(self):
-        if not self.config.active or self.state.processed:
-            return
-
         # don't do anything if window is not found/focused
         if not win.is_window_focused(win.find_window(WINDOW_NAME)):
+            self.last_focused_at = 0
+            return
+        elif self.last_focused_at == 0:
+            self.last_focused_at = time.time()
+
+        # seems ED: struggles if you send commands right away,
+        # so we need to wait a bit (50ms) before going ham :)
+        focused = time.time() - self.last_focused_at > .05
+        if not focused:
+            return
+
+        if not self.config.active or self.state.processed:
             return
 
         if self.config.auto_fa:
@@ -100,10 +111,10 @@ class MyApp(App):
         self.state.flight_assist = not flags & Status.FLIGHT_ASSIST_OFF
         self.state.gear = flags & Status.GEAR_DOWN
 
-        self.was_docked_or_landed |= self.state.docked_or_landed
         self.state.in_srv = flags & Status.IN_SRV
         self.state.fsd_active = flags & (Status.FSD_CHARGING | Status.SUPER_CRUISE | Status.FSD_JUMP)
         self.state.docked_or_landed = flags & (Status.DOCKED | Status.LANDED)
+        self.was_docked_or_landed |= self.state.docked_or_landed
 
     def check_flight_assist(self):
         if self.state.in_srv or self.state.docked_or_landed or self.state.fsd_active:
@@ -165,6 +176,7 @@ class MyApp(App):
 
         # debug ui I guess
         yes_no(self.state.docked_or_landed, 'Docked/Landed')
+        yes_no(self.was_docked_or_landed, 'Was Docked/Landed')
         yes_no(self.state.fsd_active, 'FSD Active')
         yes_no(self.state.in_srv, 'In SRV')
         imgui.separator()
