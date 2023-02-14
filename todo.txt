@@ -1,3 +1,2 @@
 - modifiable ED path (actually don't think we need this as the logs are always in the same location)
 - can switch FA if landed, just not if docked
-- minimization status is not persisted over restarts
