@@ -47,7 +47,7 @@ def default_config():
 
 class MyApp(App):
     def __init__(self):
-        self.config = Config.load(MyConfig, _CONFIG_PATH, default_config)
+        self.config: MyConfig = Config.load(MyConfig, _CONFIG_PATH, default_config)
         super().__init__(AppConfig(
                 width=330,
                 height=210,
@@ -173,6 +173,12 @@ class MyApp(App):
     def on_stop(self):
         self.watchdog.stop()
         Config.save(MyConfig, _CONFIG_PATH, self.config)
+
+    def on_hide(self):
+        self.config.start_minimized = True
+
+    def on_show(self):
+        self.config.start_minimized = False
 
 
 def main():
