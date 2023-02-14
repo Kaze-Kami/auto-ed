@@ -45,6 +45,18 @@ def default_config():
     )
 
 
+class ShipState:
+    def __init__(self):
+        self.processed = False
+        self.flight_assist = False
+        self.drive_assist = False
+        self.gear = False
+
+        self.in_srv = False
+        self.fsd_active = False
+        self.docked_or_landed = False
+
+
 class MyApp(App):
     def __init__(self):
         self.config: MyConfig = Config.load(MyConfig, _CONFIG_PATH, default_config)
@@ -59,17 +71,11 @@ class MyApp(App):
 
         self.watchdog = Watchdog(ed.BasePath, ed.Files.STATUS, self.on_status_update)
 
-        self.flight_assist = False
-        self.drive_assist = False
-        self.gear = False
-
-        self.in_srv = False
-        self.fsd_active = False
+        self.state = ShipState()
         self.was_docked_or_landed = False
-        self.docked_or_landed = False
 
     def update(self):
-        if not self.config.active:
+        if not self.config.active or self.state.processed:
             return
 
         # don't do anything if window is not found/focused
@@ -82,45 +88,45 @@ class MyApp(App):
             self.check_drive_assist()
         if self.config.auto_gear:
             self.check_gear()
+        self.state.processed = True
 
     def on_status_update(self, status_data: bytes):
         data = json.loads(status_data)
         flags = data['Flags']
 
-        self.drive_assist = flags & Status.SRV_DRIVE_ASSIST
-        self.flight_assist = not flags & Status.FLIGHT_ASSIST_OFF
-        self.gear = flags & Status.GEAR_DOWN
+        self.state = ShipState()
 
-        self.in_srv = flags & Status.IN_SRV
-        self.fsd_active = flags & (Status.FSD_CHARGING | Status.SUPER_CRUISE | Status.FSD_JUMP)
-        self.was_docked_or_landed |= self.docked_or_landed
-        self.docked_or_landed = flags & (Status.DOCKED | Status.LANDED)
+        self.state.drive_assist = flags & Status.SRV_DRIVE_ASSIST
+        self.state.flight_assist = not flags & Status.FLIGHT_ASSIST_OFF
+        self.state.gear = flags & Status.GEAR_DOWN
+
+        self.was_docked_or_landed |= self.state.docked_or_landed
+        self.state.in_srv = flags & Status.IN_SRV
+        self.state.fsd_active = flags & (Status.FSD_CHARGING | Status.SUPER_CRUISE | Status.FSD_JUMP)
+        self.state.docked_or_landed = flags & (Status.DOCKED | Status.LANDED)
 
     def check_flight_assist(self):
-        if self.in_srv or self.docked_or_landed or self.fsd_active:
+        if self.state.in_srv or self.state.docked_or_landed or self.state.fsd_active:
             return
 
-        if self.flight_assist:
+        if self.state.flight_assist:
             _LOGGER.info('Disable Flight assist')
-            self.flight_assist = False
             win.press_key(KEY_FA)
 
     def check_drive_assist(self):
-        if not self.in_srv:
+        if not self.state.in_srv:
             return
 
-        if self.drive_assist:
+        if self.state.drive_assist:
             _LOGGER.info('Disable Drive assist')
-            self.drive_assist = False
             win.press_key(KEY_DA)
 
     def check_gear(self):
-        if not self.gear:
+        if not self.state.gear:
             return
 
-        if self.was_docked_or_landed and not self.docked_or_landed:
+        if self.was_docked_or_landed and not self.state.docked_or_landed:
             _LOGGER.info('Retracting gear')
-            self.gear = False
             self.was_docked_or_landed = False
             win.press_key(KEY_GEAR)
 
@@ -158,14 +164,14 @@ class MyApp(App):
         imgui.separator()
 
         # debug ui I guess
-        yes_no(self.docked_or_landed, 'Docked/Landed')
-        yes_no(self.fsd_active, 'FSD Active')
-        yes_no(self.in_srv, 'In SRV')
+        yes_no(self.state.docked_or_landed, 'Docked/Landed')
+        yes_no(self.state.fsd_active, 'FSD Active')
+        yes_no(self.state.in_srv, 'In SRV')
         imgui.separator()
 
-        yes_no(self.drive_assist, 'Drive Assist', 'Enabled', 'Disabled')
-        yes_no(self.flight_assist, 'Flight Assist', 'Enabled', 'Disabled')
-        yes_no(self.gear, 'Gear', 'Extended', 'Retracted')
+        yes_no(self.state.drive_assist, 'Drive Assist', 'Enabled', 'Disabled')
+        yes_no(self.state.flight_assist, 'Flight Assist', 'Enabled', 'Disabled')
+        yes_no(self.state.gear, 'Gear', 'Extended', 'Retracted')
 
     def on_start(self):
         self.watchdog.start()
