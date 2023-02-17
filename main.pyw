@@ -16,6 +16,8 @@ import imgui
 from essentials.gui.app import App, AppConfig
 from essentials.gui.config import Config
 from essentials.io.logging import get_logger
+from essentials.utils.git import releases_url, file_url
+from essentials.utils.versioning import Version, check_version
 
 from lib.ed import Status
 from lib.filesystem import Watchdog
@@ -24,6 +26,9 @@ from lib.globals import *
 _LOGGER = get_logger('main')
 
 _CONFIG_PATH = 'config.json'
+_VERSION_FILE = '.version'
+_VERSION_REF_FILE = file_url('Kaze-Kami', 'auto-ed', '.version', branch='main')
+_LATEST_RELEASE = releases_url('Kaze-Kami', 'auto-ed', latest=True)
 
 
 class MyConfig(Config):
@@ -62,8 +67,8 @@ class MyApp(App):
     def __init__(self):
         self.config: MyConfig = Config.load(MyConfig, _CONFIG_PATH, default_config)
         super().__init__(AppConfig(
-                width=330,
-                height=250,
+                width=310,
+                height=235,
                 title='Auto-ED',
                 icon_path='resources/icon-color.png',
                 start_minimized=self.config.start_minimized,
@@ -75,6 +80,10 @@ class MyApp(App):
         self.state = ShipState()
         self.was_docked_or_landed = False
         self.last_focused_at = time.time()
+
+        with open(_VERSION_FILE, 'r') as vf:
+            self.current_version = Version.parse_version(vf.read())
+        self.latest_version = check_version(self.current_version, _VERSION_REF_FILE)
 
     def update(self):
         # don't do anything if window is not found/focused
@@ -164,6 +173,15 @@ class MyApp(App):
             return not status if r else status
 
         yes_no(win.find_window(WINDOW_NAME), 'Elite Running')
+
+        if self.latest_version is not None:
+            imgui.push_style_color(imgui.COLOR_TEXT, *red)
+            text = "New version available!"
+            text_width, _ = imgui.calc_text_size(text)
+            imgui.same_line(imgui.get_window_content_region_max().x - text_width)
+            imgui.text(text)
+            imgui.pop_style_color()
+
         imgui.separator()
         self.config.active = colored_switch('Active', self.config.active)
         imgui.same_line()
