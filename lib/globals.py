@@ -32,7 +32,7 @@ VERSION_FILE = '.version'
 VERSION_REF_URL = file_url('Kaze-Kami', 'auto-ed', '.version', branch='main')
 
 # file paths
-DATA_DIR = 'data'
+DATA_DIR = '.data'
 CONFIG_FILE = join_path(DATA_DIR, 'config.json')
 WAYPOINT_FILE = join_path(DATA_DIR, 'waypoints.json')
 WAYPOINT_BACKUP_PATTERN = join_path(DATA_DIR, 'waypoints-backup-%d.json')

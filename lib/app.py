@@ -6,6 +6,7 @@
 """
 
 import json
+import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -94,6 +95,9 @@ class MyApp(App):
         with open_or_create(VERSION_FILE, 'r', '0.0.0') as vf:
             self.current_version = Version.parse_version(vf.read())
         self.latest_version = check_version(self.current_version, VERSION_REF_URL)
+
+        # ensure data dir exists
+        os.makedirs(DATA_DIR, exist_ok=True)
 
         with open_or_create(WAYPOINT_FILE, 'r', '[]') as wpf:
             try:
