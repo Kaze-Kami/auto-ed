@@ -27,6 +27,7 @@ Or set the following key binds yourself (I recommend using the secondary bind, a
 
 ![img.png](docs/screenshot_main.png)
 
+## Automation
 The top row of (green) buttons are toggles, to enable different features and the app itself,
 just click them to disable/enable a feature.
 
@@ -35,3 +36,9 @@ Below is some information on what the program is reading from ED.
 The app minimizes to tray (Close, closes it!)
 
 Clicking the tray icon shows the app, right-clicking it gives the option to close the app
+
+
+## Waypoint Manager
+
+- Lets you save waypoints
+- Tells bearing towards selected waypoint

@@ -1,4 +1,6 @@
 /.idea
 /.venv
 */__pycache__
-config.json
+/data/*
+!/data/.version
+imgui.ini
