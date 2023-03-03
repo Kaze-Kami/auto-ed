@@ -5,7 +5,6 @@
 @author Kami-Kaze
 """
 
-
 from typing import Callable
 
 

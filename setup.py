@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """
-Simple tool to automatically disable Flight-Assist
-in Elite: Dangerous
+Script to set up key binds for Auto-ED
 
-Reads the status.json and if disables FA if necessary
+TODO: Alter game config files directly:
+    - arg: config-name
 
+    -> copy config to <config-name>-auto-ed and overwrite needed key binds
 @author Kami-Kaze
 """
 
@@ -34,7 +35,7 @@ def main():
 
             print('Setting key bind')
             time.sleep(.5)
-            win.press_key(key)
+            win.press_key(key, KEY_GLOBAL_MOD)
             print('Press enter to continue or anything else to repeat...')
             if getch() == b'\r':
                 break
@@ -42,6 +43,8 @@ def main():
     set_bind('Flight Assist (Toggle)', KEY_FA)
     set_bind('Drive Assist (Toggle)', KEY_DA)
     set_bind('Landing Gear', KEY_GEAR)
+    set_bind('Lights', KEY_LIGHTS)
+    set_bind('Night Vision', KEY_NIGHT_VISION)
     print('Setup complete')
     print('Remember to save your ED settings')
 

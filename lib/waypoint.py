@@ -17,10 +17,6 @@ class Waypoint:
     lat: float
     lon: float
 
-    @property
-    def text(self):
-        return f'{self.name} ({self.planet})'
-
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Waypoint):
             return self.id == o.id

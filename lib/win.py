@@ -10,7 +10,6 @@ see https://stackoverflow.com/a/11910555/10330869
 """
 
 import ctypes
-from enum import IntEnum
 
 import win32api
 import win32gui
@@ -356,8 +355,13 @@ def scan_code(key):
     return win32api.MapVirtualKey(key, 0)
 
 
-def press_key(key):
-    return SendInput(Keyboard(key), Keyboard(key, KEYEVENTF_KEYUP))
+def press_key(key, *mods):
+    inputs = [
+        *[Keyboard(mod) for mod in mods],
+        Keyboard(key), Keyboard(key, KEYEVENTF_KEYUP),
+        *[Keyboard(mod, KEYEVENTF_KEYUP) for mod in reversed(mods)],
+    ]
+    return SendInput(*inputs)
 
 
 def stream_chars(string):

@@ -17,9 +17,12 @@ from lib import ed, win
 WINDOW_NAME = ed.WindowName
 
 # key binds
-KEY_FA = win.scan_code(win.VK_F9)
-KEY_DA = win.scan_code(win.VK_F10)
-KEY_GEAR = win.scan_code(win.VK_F11)
+KEY_GLOBAL_MOD = win.scan_code(win.VK_RSHIFT)
+KEY_FA = win.scan_code(win.VK_F5)
+KEY_DA = win.scan_code(win.VK_F6)
+KEY_GEAR = win.scan_code(win.VK_F7)
+KEY_LIGHTS = win.scan_code(win.VK_F8)
+KEY_NIGHT_VISION = win.scan_code(win.VK_F9)
 
 # logging
 LOGGER = get_logger('main')
