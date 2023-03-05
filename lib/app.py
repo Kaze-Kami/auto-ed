@@ -6,7 +6,6 @@
 """
 
 import json
-import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -80,7 +79,7 @@ class MyApp(App):
                 width=500,
                 height=300,
                 title='Auto-ED',
-                icon_path='resources/icon-color.png',
+                icon_path='resources/icon-color.ico',
                 resizable=True,
                 start_minimized=self.config.start_minimized,
                 background_color=(0.17, 0.24, 0.31),
