@@ -1,0 +1,3 @@
+# Needs to be installed globally for pyinstaller to be available
+# or in a venv using <venv>/Scripts/pyinstaller.exe instead
+pyinstaller==5.8.0
