@@ -307,20 +307,20 @@ class MyApp(App):
             if is_active:
                 imgui.push_style_color(imgui.COLOR_BUTTON, *green)
 
-            same_planet = self.planet_name == waypoint.planet
+            can_target = not self.has_position or self.planet_name == waypoint.planet
 
-            if not same_planet:
+            if not can_target:
                 imgui.push_style_color(imgui.COLOR_BUTTON, *gray)
                 imgui.push_style_color(imgui.COLOR_BUTTON_ACTIVE, *gray)
                 imgui.push_style_color(imgui.COLOR_BUTTON_HOVERED, *gray)
 
-            if imgui.button(f'Target##{waypoint.id}') and same_planet:
+            if imgui.button(f'Target##{waypoint.id}') and can_target:
                 if is_active:
                     self.current_waypoint = None
                 else:
                     self.current_waypoint = waypoint
 
-            if not same_planet:
+            if not can_target:
                 imgui.pop_style_color(3)
                 if imgui.is_item_hovered(ImGuiHoveredFlags_DelayShort):
                     imgui.begin_tooltip()
@@ -409,30 +409,41 @@ class MyApp(App):
                 yes_no(self.state.flight_assist, 'Flight Assist', 'Enabled', 'Disabled')
                 yes_no(self.state.gear, 'Gear', 'Extended', 'Retracted')
                 yes_no(self.state.lights, 'Lights', 'On', 'Off')
-                yes_no(self.state.night_vision, 'Gear', 'On', 'Off')
+                yes_no(self.state.night_vision, 'Night vision', 'On', 'Off')
 
         # waypoint manager
         with collapsing_header('Waypoint Manager') as open:
             if open:
                 if self.current_waypoint is not None:
-                    if self.has_position:
+                    bearing_text = '[Unavailable]'
+                    distance_text = '[Unavailable]'
+                    if self.has_position and self.current_waypoint.planet == self.planet_name:
                         bearing = calculate_bearing(self.position, self.current_waypoint)
-                        distance = calculate_distance(self.position, self.current_waypoint, self.planet_radius)
-                        imgui.align_text_to_frame_padding()
-                        imgui.text(f'Bearing: {bearing:.1f}° ({distance:.0f} m on surface)')
+                        surf_distance = calculate_distance(self.position, self.current_waypoint, self.planet_radius)
+                        alt_distance = calculate_distance(self.position, self.current_waypoint, self.planet_radius + self.altitude)
+                        bearing_text = f'{bearing:.1f}°'
+                        distance_text = f'{alt_distance:.0f}m ({surf_distance:.0f}m on surface)'
 
                     waypoint_name(self.current_waypoint, self.config.show_planet_names and not self.config.filter_current_planet, prefix='Target: ')
+
+                    if self.current_waypoint is not None:
+                        imgui.same_line()
+                        if right_button('Unset'):
+                            self.current_waypoint = None
+
+                    imgui.align_text_to_frame_padding()
+                    imgui.text(f'Bearing: {bearing_text}')
+                    imgui.align_text_to_frame_padding()
+                    imgui.text(f'Distance: {distance_text}')
                 else:
+                    imgui.align_text_to_frame_padding()
+                    imgui.text(f'Target: [No Target]')
+
                     imgui.align_text_to_frame_padding()
                     imgui.text(f'Bearing: [No Target]')
 
                     imgui.align_text_to_frame_padding()
-                    imgui.text(f'Target: [No Target]')
-
-                if self.current_waypoint is not None:
-                    imgui.same_line()
-                    if right_button('Unset'):
-                        self.current_waypoint = None
+                    imgui.text(f'Distance: [No Target]')
 
                 if self.has_position:
                     lat, lon = self.position
@@ -527,7 +538,7 @@ class MyApp(App):
             self.filtered_waypoints_by_planet[waypoint.planet].append(waypoint)
 
     def _filter_waypoint(self, waypoint: Waypoint) -> bool:
-        if self.config.filter_current_planet:
+        if self.config.filter_current_planet and self.has_position:
             if self.planet_name != waypoint.planet:
                 return False
 
