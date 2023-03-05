@@ -6,3 +6,4 @@ imgui.ini
 build/
 out/
 *.spec
+log.txt
