@@ -34,7 +34,7 @@ class UiState:
 
 class MyConfig(Config):
     def __init__(self,
-                 start_minimized: bool, active: bool,
+                 start_minimized: bool, floating: bool, active: bool,
                  auto_fa: bool, auto_da: bool, auto_gear: bool,
                  auto_lights: bool, auto_night_vision: bool,
                  waypoint_filter: str, fuzzy_ratio: int,
@@ -42,6 +42,7 @@ class MyConfig(Config):
                  ):
         super().__init__()
         self.start_minimized = start_minimized
+        self.floating = floating
         self.active = active
         self.auto_fa = auto_fa
         self.auto_da = auto_da
@@ -58,6 +59,7 @@ class MyConfig(Config):
 def default_config():
     return MyConfig(
             start_minimized=False,
+            floating=False,
             active=True,
             auto_fa=True,
             auto_da=True,
@@ -83,6 +85,7 @@ class MyApp(App):
                 resizable=True,
                 start_minimized=self.config.start_minimized,
                 background_color=(0.17, 0.24, 0.31),
+                floating=self.config.floating,
         ))
 
         self.watchdog = Watchdog(ed.BasePath, ed.Files.STATUS, self.on_status_update)
@@ -370,6 +373,16 @@ class MyApp(App):
 
         # --                      MAIN UI                      -- #
 
+        # Main menu bar for floating option
+        imgui.begin_menu_bar()
+        if imgui.begin_menu('File'):
+            click, floating = imgui.menu_item('Floating', None, self.config.floating)
+            if click:
+                self.config.floating = floating
+                self.floating = floating
+            imgui.end_menu()
+        imgui.end_menu_bar()
+
         # status button
         yes_no(win.find_window(WINDOW_NAME), 'Elite Running')
 
@@ -528,6 +541,9 @@ class MyApp(App):
 
     def on_show(self):
         self.config.start_minimized = False
+
+    def get_additional_imgui_flags(self) -> int:
+        return imgui.WINDOW_MENU_BAR
 
     def _filter_waypoints(self):
         self.filtered_waypoints = list(filter(self._filter_waypoint, self.waypoints))
