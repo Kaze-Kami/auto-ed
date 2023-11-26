@@ -61,7 +61,7 @@ def default_config():
     return MyConfig(
             start_minimized=False,
             floating=False,
-            window_position=(0, 0),
+            window_position=(100, 100),
             active=True,
             auto_fa=True,
             auto_da=True,
