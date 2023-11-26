@@ -1,3 +1,7 @@
 # Needs to be installed globally for pyinstaller to be available
 # or in a venv using <venv>/Scripts/pyinstaller.exe instead
-pyinstaller==5.8.0
+pyinstaller==6.2.0
+
+# Should point at the local clone of python_essentials
+# for developing 'in parallel' (https://github.com/Kaze-Kami/python-essentials)
+-e C:/Development/Projects/private/python/python_essentials

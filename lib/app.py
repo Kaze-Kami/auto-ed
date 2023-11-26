@@ -34,8 +34,8 @@ class UiState:
 
 class MyConfig(Config):
     def __init__(self,
-                 start_minimized: bool, floating: bool, active: bool,
-                 auto_fa: bool, auto_da: bool, auto_gear: bool,
+                 start_minimized: bool, floating: bool, window_position: (int, int),
+                 active: bool, auto_fa: bool, auto_da: bool, auto_gear: bool,
                  auto_lights: bool, auto_night_vision: bool,
                  waypoint_filter: str, fuzzy_ratio: int,
                  show_planet_names: bool, group_by_planet: bool, filter_current_planet: bool,
@@ -43,6 +43,7 @@ class MyConfig(Config):
         super().__init__()
         self.start_minimized = start_minimized
         self.floating = floating
+        self.window_position = window_position
         self.active = active
         self.auto_fa = auto_fa
         self.auto_da = auto_da
@@ -60,6 +61,7 @@ def default_config():
     return MyConfig(
             start_minimized=False,
             floating=False,
+            window_position=(0, 0),
             active=True,
             auto_fa=True,
             auto_da=True,
@@ -82,11 +84,13 @@ class MyApp(App):
                 height=300,
                 title='Auto-ED',
                 icon_path='resources/icon-color.ico',
-                resizable=True,
                 start_minimized=self.config.start_minimized,
-                background_color=(0.17, 0.24, 0.31),
-                floating=self.config.floating,
         ))
+
+        # additional window setup
+        self.window.position = self.config.window_position
+        self.window.floating = self.config.floating
+        self.window.background_color = (.1, .1, .1, 1.)
 
         self.watchdog = Watchdog(ed.BasePath, ed.Files.STATUS, self.on_status_update)
 
@@ -373,13 +377,19 @@ class MyApp(App):
 
         # --                      MAIN UI                      -- #
 
-        # Main menu bar for floating option
+        # Main menu bar
         imgui.begin_menu_bar()
         if imgui.begin_menu('File'):
+            # floating entry
             click, floating = imgui.menu_item('Floating', None, self.config.floating)
             if click:
-                self.config.floating = floating
-                self.floating = floating
+                self.config.floating = self.window.floating = floating
+
+            # exit entry
+            click, _ = imgui.menu_item('Exit', None)
+            if click:
+                self.exit()
+
             imgui.end_menu()
         imgui.end_menu_bar()
 
@@ -392,7 +402,7 @@ class MyApp(App):
             right_text('New version available!')
             imgui.pop_style_color()
         else:
-            right_text(f'Version {self.current_version}')
+            right_text(f'Version {self.current_version} ')
 
         # automation tools
         with collapsing_header('Automation') as open:
@@ -541,6 +551,9 @@ class MyApp(App):
 
     def on_show(self):
         self.config.start_minimized = False
+
+    def on_move(self, pos: (int, int)):
+        self.config.window_position = pos
 
     def get_additional_imgui_flags(self) -> int:
         return imgui.WINDOW_MENU_BAR

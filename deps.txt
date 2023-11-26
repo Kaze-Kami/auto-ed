@@ -1,5 +1,5 @@
-pywin32==305
-watchdog==2.3.1
+pywin32==306
+watchdog==3.0.0
 easygui==0.98.3
 fuzzywuzzy[speedup]==0.18.0
 python-essentials @ git+https://github.com/Kaze-Kami/python-essentials.git
