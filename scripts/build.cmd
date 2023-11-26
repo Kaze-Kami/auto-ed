@@ -2,10 +2,13 @@
 
 :: Basic Options
 SET env=.\.venv\Scripts\
+SET python=%env%Python.exe
+
 SET entry-point=.\main.pyw
 SET name=auto-ed
-SET out-path=.\out
+
 SET build-path=.\build
+SET out-path=.\out
 
 :: Build Configuration
 SET toolchain=pyinstaller.exe
@@ -23,17 +26,29 @@ SET options=^
  --collect-binaries glfw^
  --icon .\resources\icon-color.ico
 
-SET exec= %env%%toolchain%
-SET args=%entry-point% %build-options% %options%
+SET build=%env%%toolchain%
+SET build_args=%entry-point% %build-options% %options%
+
+SET deps=deps.txt
+SET install_deps=%python% -m pip install -r
+
+:: Install dependencies
+ECHO ----------------------------------------------
+ECHO Install dependencies
+@ECHO ON
+%install_deps% %deps%
+@ECHO OFF
 
 :: Build command
-ECHO Build %main%
+ECHO ----------------------------------------------
+ECHO Build %name%
 @ECHO ON
-%exec% %args%
+%build% %build_args%
 @ECHO OFF
-ECHO Build %main% complete
+ECHO Build %name% complete
 
 :: Copy resources
+ECHO ----------------------------------------------
 ECHO Copy Resources
 @ECHO ON
 xcopy  .\resources\ %out-path%\resources\ /E /Y
