@@ -16,6 +16,7 @@ from essentials.gui.config import Config
 from essentials.io.file import open_or_create
 from essentials.utils.versioning import Version, check_version
 from fuzzywuzzy.fuzz import partial_ratio
+from prefixed import Float
 
 from lib.ed import Status
 from lib.filesystem import Watchdog
@@ -37,7 +38,7 @@ class MyConfig(Config):
                  start_minimized: bool, floating: bool, window_position: (int, int),
                  active: bool, auto_fa: bool, auto_da: bool, auto_gear: bool,
                  auto_lights: bool, auto_night_vision: bool,
-                 waypoint_filter: str, fuzzy_ratio: int,
+                 waypoint_filter: str, fuzzy_ratio: int, seconds_to_average: int,
                  show_planet_names: bool, group_by_planet: bool, filter_current_planet: bool,
                  ):
         super().__init__()
@@ -50,6 +51,7 @@ class MyConfig(Config):
         self.auto_gear = auto_gear
         self.waypoint_filter = waypoint_filter
         self.fuzzy_ratio = fuzzy_ratio
+        self.seconds_to_average = seconds_to_average
         self.show_planet_names = show_planet_names
         self.group_by_planet = group_by_planet
         self.auto_lights = auto_lights
@@ -70,6 +72,7 @@ def default_config():
             auto_night_vision=False,
             waypoint_filter='',
             fuzzy_ratio=DEFAULT_FUZZY_RATIO,
+            seconds_to_average=DEFAULT_SECONDS_TO_AVERAGE,
             show_planet_names=True,
             group_by_planet=True,
             filter_current_planet=True,
@@ -128,6 +131,10 @@ class MyApp(App):
         self.filtered_waypoints_by_planet = defaultdict(lambda: [])
         self._filter_waypoints()
 
+        # eta related
+        self._last_status_update: float or None = None
+        self.recent_average_velocity: float or None = None
+
     def update(self):
         # don't do anything if window is not found/focused
         if not win.is_window_focused(win.find_window(WINDOW_NAME)):
@@ -178,6 +185,7 @@ class MyApp(App):
 
         self.has_position = flags & Status.HAS_LAT_LONG
         if self.has_position:
+            last_position = self.position
             self.position = data['Latitude'], data['Longitude']
             self.heading = data['Heading']
             self.planet_radius = data['PlanetRadius']
@@ -187,12 +195,32 @@ class MyApp(App):
             if planet_name != self.planet_name:
                 self.planet_name = planet_name
                 self._filter_waypoints()
+
+            # update eta tracking stats
+            t1 = time.time()
+            if (t0 := self._last_status_update) is not None:
+                dt = t1 - t0
+                dx = calculate_distance(self.position, last_position, self.planet_radius + self.altitude)
+                v = dx / dt
+
+                if self.recent_average_velocity is None:
+                    self.recent_average_velocity = v
+                else:
+                    k = max(min(dt / self.config.seconds_to_average, 1.0), 0.0)
+                    self.recent_average_velocity = self.recent_average_velocity * (1.0 - k) + v * k
+
+            self._last_status_update = t1
+
         else:
             self.position = 0.0, 0.0
             self.heading = 0.0
             self.planet_radius = 0.0
             self.altitude = 0.0
             self.planet_name = ''
+
+            # reset eta tracking stats
+            self.recent_average_velocity = None
+            self._last_status_update = None
 
     def check_flight_assist(self):
         if self.state.in_srv or self.state.docked_or_landed or self.state.fsd_active:
@@ -441,10 +469,16 @@ class MyApp(App):
                     distance_text = '[Unavailable]'
                     if self.has_position and self.current_waypoint.planet == self.planet_name:
                         bearing = calculate_bearing(self.position, self.current_waypoint)
-                        surf_distance = calculate_distance(self.position, self.current_waypoint, self.planet_radius)
-                        alt_distance = calculate_distance(self.position, self.current_waypoint, self.planet_radius + self.altitude)
-                        bearing_text = f'{bearing:.1f}°'
-                        distance_text = f'{alt_distance:.0f}m ({surf_distance:.0f}m on surface)'
+
+                        alt_distance = calculate_distance(self.position, self.current_waypoint.position, self.planet_radius + self.altitude)
+                        surf_distance = calculate_distance(self.position, self.current_waypoint.position, self.planet_radius)
+
+                        eta = 'N/A'
+                        if (v := self.recent_average_velocity) is not None and 0.0 < v:
+                            eta = f'{alt_distance / v:.0f}s'
+
+                        bearing_text = f'{bearing:.1f}° {eta=}'
+                        distance_text = f'{Float(alt_distance):.2h}m ({Float(surf_distance):.2h}m on surface)'
 
                     waypoint_name(self.current_waypoint, self.config.show_planet_names and not self.config.filter_current_planet, prefix='Target: ')
 
@@ -497,11 +531,19 @@ class MyApp(App):
 
                         if imgui.begin_popup('manager_settings'):
                             ratio_change, self.config.fuzzy_ratio = imgui.slider_int('Fuzzy Ratio', self.config.fuzzy_ratio, 0, 100)
-
                             imgui.same_line(0, 30)
-                            if imgui.button('Reset##ratio_reset'):
+                            if imgui.button('Reset##fuzzy_ratio'):
                                 ratio_change = True
                                 self.config.fuzzy_ratio = DEFAULT_FUZZY_RATIO
+
+                            seconds_change, self.config.seconds_to_average = imgui.input_int('Average velocity over (s)', self.config.seconds_to_average, 1)
+                            imgui.same_line(0, 30)
+                            if imgui.button('Reset##seconds_to_average'):
+                                seconds_change = True
+                                self.config.seconds_to_average = DEFAULT_SECONDS_TO_AVERAGE
+
+                            if seconds_change and self.config.seconds_to_average < 1:
+                                self.config.seconds_to_average = 1
 
                             planet_change, self.config.filter_current_planet = imgui.checkbox('Filter current planet', self.config.filter_current_planet)
 
@@ -510,7 +552,7 @@ class MyApp(App):
                             if not self.config.filter_current_planet:
                                 _, self.config.group_by_planet = imgui.checkbox('Group by planet', self.config.group_by_planet)
 
-                            change |= ratio_change | planet_change
+                            change |= ratio_change | planet_change | seconds_change
                             imgui.end_popup()
 
                         if change:

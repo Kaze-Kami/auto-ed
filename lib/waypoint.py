@@ -22,6 +22,10 @@ class Waypoint:
             return self.id == o.id
         return super().__eq__(o)
 
+    @property
+    def position(self) -> tuple[float, float]:
+        return self.lat, self.lon
+
     @staticmethod
     def from_json(args):
         return Waypoint(**args)
@@ -63,7 +67,7 @@ def calculate_bearing(position: tuple[float, float], target: Waypoint) -> float:
     return bearing
 
 
-def calculate_distance(position: tuple[float, float], target: Waypoint, planet_radius) -> float:
+def calculate_distance(position: tuple[float, float], target: tuple[float, float], planet_radius) -> float:
     """
     Calculate distance between to points of (lat, long) on surface of planet with given radius
 
@@ -74,7 +78,7 @@ def calculate_distance(position: tuple[float, float], target: Waypoint, planet_r
 
     # Convert latitude and longitude to radians
     lat1, lon1 = radians(*position)
-    lat2, lon2 = radians(target.lat, target.lon)
+    lat2, lon2 = radians(*target)
 
     d_lat, d_lon = lat2 - lat1, lon2 - lon1
 

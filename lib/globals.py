@@ -45,6 +45,7 @@ WAYPOINT_NAME_PATTERN = 'New Waypoint %d'
 # ui stuff
 BUTTON_PADDING = 5  # add this to a the calc_text_size of a button's text to get the buttons width
 DEFAULT_FUZZY_RATIO = 70
+DEFAULT_SECONDS_TO_AVERAGE = 5
 
 # not present in PyImGui -> taken from imgui source code
 ImGuiHoveredFlags_DelayShort = 1 << 12
