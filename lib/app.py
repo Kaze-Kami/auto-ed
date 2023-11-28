@@ -8,9 +8,9 @@
 import json
 import time
 from collections import defaultdict
-from dataclasses import dataclass
 
 import imgui
+from attrs import define
 from essentials.gui.app import App, AppConfig
 from essentials.gui.config import Config
 from essentials.io.file import open_or_create
@@ -26,62 +26,35 @@ from lib.util import find_first_available
 from lib.waypoint import Waypoint, calculate_bearing, calculate_distance
 
 
-@dataclass
+@define
 class UiState:
     automation: bool = True
     waypoint_manager: bool = True
     waypoints: bool = True
 
 
+@define
 class MyConfig(Config):
-    def __init__(self,
-                 start_minimized: bool, floating: bool, window_position: (int, int),
-                 active: bool, auto_fa: bool, auto_da: bool, auto_gear: bool,
-                 auto_lights: bool, auto_night_vision: bool,
-                 waypoint_filter: str, fuzzy_ratio: int, seconds_to_average: int,
-                 show_planet_names: bool, group_by_planet: bool, filter_current_planet: bool,
-                 ):
-        super().__init__()
-        self.start_minimized = start_minimized
-        self.floating = floating
-        self.window_position = window_position
-        self.active = active
-        self.auto_fa = auto_fa
-        self.auto_da = auto_da
-        self.auto_gear = auto_gear
-        self.waypoint_filter = waypoint_filter
-        self.fuzzy_ratio = fuzzy_ratio
-        self.seconds_to_average = seconds_to_average
-        self.show_planet_names = show_planet_names
-        self.group_by_planet = group_by_planet
-        self.auto_lights = auto_lights
-        self.auto_night_vision = auto_night_vision
-        self.filter_current_planet = filter_current_planet
-
-
-def default_config():
-    return MyConfig(
-            start_minimized=False,
-            floating=False,
-            window_position=(100, 100),
-            active=True,
-            auto_fa=True,
-            auto_da=True,
-            auto_gear=True,
-            auto_lights=False,
-            auto_night_vision=False,
-            waypoint_filter='',
-            fuzzy_ratio=DEFAULT_FUZZY_RATIO,
-            seconds_to_average=DEFAULT_SECONDS_TO_AVERAGE,
-            show_planet_names=True,
-            group_by_planet=True,
-            filter_current_planet=True,
-    )
+    start_minimized: bool = False
+    floating: bool = False
+    window_position: (float, float) = (100, 100)
+    active: bool = True
+    auto_fa: bool = True
+    auto_da: bool = True
+    auto_gear: bool = True
+    auto_lights: bool = False
+    auto_night_vision: bool = False
+    waypoint_filter: str = ''
+    fuzzy_ratio: float = DEFAULT_FUZZY_RATIO
+    seconds_to_average: int = DEFAULT_SECONDS_TO_AVERAGE
+    show_planet_names: bool = True
+    group_by_planet: bool = True
+    filter_current_planet: bool = True
 
 
 class MyApp(App):
     def __init__(self):
-        self.config: MyConfig = Config.load(MyConfig, CONFIG_FILE, default_config)
+        self.config: MyConfig = Config.load_or_defaults(MyConfig, CONFIG_FILE, backup_suffix='.backup_%Y%m%d')
         super().__init__(AppConfig(
                 width=500,
                 height=300,
