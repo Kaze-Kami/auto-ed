@@ -1,2 +1,3 @@
-- modifiable ED path (actually don't think we need this as the logs are always in the same location)
+- drop 'setup.py', make hotkeys modifiable
 - can switch FA if landed, just not if docked
+- modifiable ED path (actually don't think we need this as the logs are always in the same location)
