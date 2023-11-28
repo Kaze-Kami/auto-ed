@@ -11,13 +11,21 @@ By Kami-Kaze
 - Unpack it and put it where ever you feel like it (though remember where!)
 - Open the folder in a terminal and run `pip-install -r deps.txt` from a terminal (twice if the first one fails)
 
-# Setup
-Either run `python setup.py` from a terminal and follow the instructions to set the key binds
+> Same applies if you're updating, just make sure you don't delete your .data directory
+> as it contains your configuration and saved waypoints!
 
-Or set the following key binds yourself (I recommend using the secondary bind, at least for gear so you can still use it)
-> - Flight Assist: F9
-> - Drive Assist: F10
-> - Landing Gear: F11
+# Setup
+~~Either run `python setup.py` from a terminal and follow the instructions to set the key binds~~
+
+~~Or~~ 
+
+Set the following key binds yourself (I recommend using the secondary bind, at least for gear, so you can still use it manualy)
+> MOD = Right-Shift
+- Flight Assist: MOD + F5
+- Drive Assist: MOD + F6
+- Landing Gear: MOD + F7
+- Lights: MOD + F8
+- Night Vision: MOD + F9
 > NB: All of these should be set to toggle, not hold
 
 # Usage
