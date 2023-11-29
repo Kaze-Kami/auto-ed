@@ -9,6 +9,7 @@ SET name=auto-ed
 
 SET build-path=.\build
 SET out-path=.\out
+SET zip-name=auto-ed.zip
 
 :: Build Configuration
 SET toolchain=pyinstaller.exe
@@ -33,13 +34,16 @@ SET deps=deps.txt
 SET install_deps=%python% -m pip install -r
 
 :: Install dependencies
+:deps
 ECHO ----------------------------------------------
 ECHO Install dependencies
 @ECHO ON
 %install_deps% %deps%
 @ECHO OFF
+ECHO Install dependencies complete
 
 :: Build command
+:build
 ECHO ----------------------------------------------
 ECHO Build %name%
 @ECHO ON
@@ -48,10 +52,20 @@ ECHO Build %name%
 ECHO Build %name% complete
 
 :: Copy resources
+:copy
 ECHO ----------------------------------------------
-ECHO Copy Resources
+ECHO Copy resources
 @ECHO ON
 xcopy  .\resources\ %out-path%\resources\ /E /Y
 xcopy .version %out-path%\ /Y
 @ECHO OFF
-ECHO Copy Resources complete
+ECHO Copy resources complete
+
+:: Release zip
+:zip
+ECHO ----------------------------------------------
+ECHO Create release zip
+@ECHO ON
+7z a %out-path%\%zip-name% .\%out-path%\* -r -xr!%zip-name%
+@ECHO OFF
+ECHO Create release zip complete
