@@ -450,7 +450,7 @@ class MyApp(App):
                         if (v := self.recent_average_velocity) is not None and 0.0 < v:
                             eta = f'{alt_distance / v:.0f}s'
 
-                        bearing_text = f'{bearing:.1f}° {eta=}'
+                        bearing_text = f'{bearing:.1f}° (ETA: {eta})'
                         distance_text = f'{Float(alt_distance):.2h}m ({Float(surf_distance):.2h}m on surface)'
 
                     waypoint_name(self.current_waypoint, self.config.show_planet_names and not self.config.filter_current_planet, prefix='Target: ')
